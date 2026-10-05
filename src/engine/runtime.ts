@@ -95,7 +95,8 @@ export function createGameHost(opts: HostOptions, audio: AudioEngine): GameHost 
   const plan = planLevels(opts.levelOverride, opts.test);
   const fb = new Uint8Array(SCREEN_W * SCREEN_H);
   const listeners = new Set<() => void>();
-  let settings: Settings = { ...DEFAULT_SETTINGS };
+  // Test mode starts with LCD effects off for deterministic pixels; setSettings may enable them.
+  let settings: Settings = { ...DEFAULT_SETTINGS, lcd: DEFAULT_SETTINGS.lcd && !opts.test };
   let powered = true;
   let toast: string | null = null;
   let toastUntil = 0;
