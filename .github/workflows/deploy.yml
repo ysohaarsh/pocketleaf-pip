@@ -1,7 +1,10 @@
 name: Deploy to GitHub Pages
 
+# Deploy only after CI has passed on main, so a red main never ships.
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
@@ -16,9 +19,16 @@ concurrency:
 
 jobs:
   build:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Build exactly the commit CI verified.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - id: pages
+        uses: actions/configure-pages@v5
 
       - uses: actions/setup-node@v4
         with:
@@ -30,10 +40,8 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # Pages serves the site from /<repo>/; vite.config.ts reads this as `base`.
-          VITE_BASE: /${{ github.event.repository.name }}/
-
-      - uses: actions/configure-pages@v5
+          # Pages' own base path (e.g. /pocketleaf-pip, or empty for <user>.github.io repos).
+          VITE_BASE: ${{ steps.pages.outputs.base_path }}/
 
       - uses: actions/upload-pages-artifact@v3
         with:

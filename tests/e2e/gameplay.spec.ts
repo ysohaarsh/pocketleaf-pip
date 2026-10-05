@@ -16,8 +16,10 @@ test('Enter starts the game and reaches the first level', async ({ page }) => {
   await startGame(page);
   const state = await game(page);
   expect(state.scene).toBe('playing');
-  expect(state.levelId).toBeTruthy();
-  expect(state.lives).toBeGreaterThan(0);
+  expect(state.levelId).toBe('1-1');
+  expect(state.lives).toBe(3);
+  expect(state.coins).toBe(0);
+  expect(state.score).toBe(0);
 });
 
 test('holding right moves the player right', async ({ page }) => {
