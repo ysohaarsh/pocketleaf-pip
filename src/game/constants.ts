@@ -137,3 +137,15 @@ export const BOOT_CHIME_TICK = 70;
 export const INTRO_TICKS = 150;
 export const DYING_TICKS = 150;
 export const CLEAR_TICKS = 240;
+
+// --- Small contact/animation tolerances --------------------------------------
+/** An enemy counts as standing on a bumped block when its feet are within this many px (px). */
+export const BUMP_CONTACT_TOLERANCE = 2;
+/** Sideways speed of an enemy knocked off a bumped block (px/s). */
+export const KNOCK_VX = 30;
+/** Lifetime of a sparkle shown when a popped Glimmer finishes (ticks). */
+export const SCORE_POPUP_TICKS = 12;
+/** Below this |vx| (px/s) Pip shows the idle pose instead of running. */
+export const RUN_ANIM_MIN_SPEED = 1;
+/** Horizontal forgiveness on each side of a spike tile (px). */
+export const SPIKE_INSET = 2;

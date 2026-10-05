@@ -1,6 +1,13 @@
 import { hitBlock } from './blocks';
 import { forEachOverlappedTile, gridOf, moveBox } from './collision';
-import { DT, HURT_INVULN_TICKS, SPIKE_HEIGHT, TILE } from './constants';
+import {
+  DT,
+  HURT_INVULN_TICKS,
+  RUN_ANIM_MIN_SPEED,
+  SPIKE_HEIGHT,
+  SPIKE_INSET,
+  TILE,
+} from './constants';
 import { emitSfx } from './events';
 import { collectGlimmer } from './items';
 import { applyHorizontal, applyVertical, bufferJump, tryJump, updateCoyote } from './physics';
@@ -22,7 +29,7 @@ export function damagePlayer(world: World): void {
 
 function pickAnim(p: Player): PlayerAnim {
   if (!p.onGround) return p.vy < 0 ? 'jump' : 'fall';
-  return Math.abs(p.vx) > 1 ? 'run' : 'idle';
+  return Math.abs(p.vx) > RUN_ANIM_MIN_SPEED ? 'run' : 'idle';
 }
 
 /** Glimmers are collected on overlap; the lower SPIKE_HEIGHT px of a spike tile kill. */
@@ -36,7 +43,12 @@ function touchTiles(world: World): void {
       collectGlimmer(world);
     } else if (id === Tile.Spike) {
       const top = (ty + 1) * TILE - SPIKE_HEIGHT;
-      if (p.y + p.h > top && p.x + p.w > tx * TILE + 2 && p.x < (tx + 1) * TILE - 2) spiked = true;
+      if (
+        p.y + p.h > top &&
+        p.x + p.w > tx * TILE + SPIKE_INSET &&
+        p.x < (tx + 1) * TILE - SPIKE_INSET
+      )
+        spiked = true;
     }
   });
   if (spiked) enterDying(world);

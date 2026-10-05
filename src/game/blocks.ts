@@ -1,5 +1,14 @@
 import { gridOf, setTile, tileAt } from './collision';
-import { BUMP_HEIGHT, BUMP_TICKS, KNOCK_POP, SCORE_BRICK, SCORE_STOMP, TILE } from './constants';
+import {
+  BUMP_CONTACT_TOLERANCE,
+  BUMP_HEIGHT,
+  BUMP_TICKS,
+  KNOCK_POP,
+  KNOCK_VX,
+  SCORE_BRICK,
+  SCORE_STOMP,
+  TILE,
+} from './constants';
 import { emitSfx } from './events';
 import { addScore, collectGlimmer, spawnPopGlimmer, spawnSeed, spawnShards } from './items';
 import { Tile, type World } from './types';
@@ -9,12 +18,12 @@ function knockAbove(world: World, tx: number, ty: number): void {
   const top = ty * TILE;
   const left = tx * TILE;
   const onTop = (b: { x: number; y: number; w: number; h: number }): boolean =>
-    Math.abs(b.y + b.h - top) <= 2 && b.x < left + TILE && b.x + b.w > left;
+    Math.abs(b.y + b.h - top) <= BUMP_CONTACT_TOLERANCE && b.x < left + TILE && b.x + b.w > left;
   for (const e of world.enemies) {
     if (e.state !== 'walk' || !onTop(e)) continue;
     e.state = 'dead';
     e.vy = -KNOCK_POP;
-    e.vx = e.dir * 30;
+    e.vx = e.dir * KNOCK_VX;
     addScore(world, SCORE_STOMP, e.x, e.y);
     emitSfx(world, 'stomp');
   }

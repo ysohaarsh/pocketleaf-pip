@@ -11,6 +11,7 @@ import {
   SCORE_FLOAT_TICKS,
   SCORE_FLOAT_VY,
   SCORE_GLIMMER,
+  SCORE_POPUP_TICKS,
   SCORE_SEED,
   SEED_EMERGE_TICKS,
   SEED_SIZE,
@@ -141,7 +142,7 @@ export function updateItems(world: World): void {
           y: it.y,
           vx: 0,
           vy: 0,
-          timer: 12,
+          timer: SCORE_POPUP_TICKS,
           value: 0,
         });
         floatScore(world, SCORE_GLIMMER, it.x, it.y);
