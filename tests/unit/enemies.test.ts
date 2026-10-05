@@ -4,6 +4,7 @@ import {
   HURT_INVULN_TICKS,
   SCORE_STOMP,
   SQUASH_TICKS,
+  TERMINAL_VELOCITY,
 } from '../../src/game/constants';
 import { play } from './engineHelpers';
 
@@ -97,6 +98,30 @@ describe('enemies', () => {
     expect(d.sfx()).toContain('stomp');
     d.run(SQUASH_TICKS + 1);
     expect(d.world.enemies).toHaveLength(0);
+  });
+
+  it('landing on two overlapping enemies in one tick stomps both (regression)', () => {
+    const d = play(dropOnto('m'));
+    const bug = d.world.enemies[0]!;
+    // A Flutter hovering 1 px above the Mossbug's top; timer 29 → next tick sits at the sine peak.
+    d.world.enemies.push({
+      ...bug,
+      id: 999,
+      kind: 'flutter',
+      timer: 29,
+      y: bug.y - 1,
+      baseY: bug.y - 1 - FLUTTER_AMPLITUDE,
+    });
+    const p = d.world.player;
+    p.x = bug.x;
+    p.y = bug.y - p.h - 3;
+    p.vy = TERMINAL_VELOCITY;
+    p.onGround = false;
+    d.tick();
+    expect(d.world.enemies.map((e) => e.state)).toEqual(['squashed', 'dead']);
+    expect(d.world.scene).toBe('playing');
+    expect(p.invuln).toBe(0);
+    expect(d.world.score).toBe(2 * SCORE_STOMP);
   });
 
   it('a stomp with A held bounces higher', () => {

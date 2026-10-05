@@ -62,10 +62,13 @@ function touchPlayer(
   prevBottom: number,
   prevTop: number,
   aHeld: boolean,
+  falling: boolean,
 ): void {
   const p = world.player;
   if (p.dead || !overlaps(p, e)) return;
-  const fromAbove = p.vy > 0 && prevBottom <= prevTop;
+  // `falling` is sampled before any contact this tick, so stomping two overlapping enemies at
+  // once counts both as stomps instead of the second seeing the first bounce's upward velocity.
+  const fromAbove = falling && prevBottom <= prevTop;
   if (e.kind !== 'snapper' && fromAbove) {
     if (e.kind === 'flutter') {
       e.state = 'dead';
@@ -92,6 +95,7 @@ function touchPlayer(
 export function updateEnemies(world: World, prevPlayerBottom: number, aHeld: boolean): void {
   const grid = gridOf(world);
   const limit = world.level.height * TILE;
+  const falling = world.player.vy > 0;
   for (const e of world.enemies) {
     if (!e.active) {
       if (!nearView(world, e)) continue;
@@ -110,7 +114,7 @@ export function updateEnemies(world: World, prevPlayerBottom: number, aHeld: boo
     const prevTop = e.y;
     if (e.kind === 'flutter') flutter(grid, e);
     else walk(grid, e, e.kind === 'snapper' ? SNAPPER_SPEED : MOSSBUG_SPEED);
-    touchPlayer(world, e, prevPlayerBottom, prevTop, aHeld);
+    touchPlayer(world, e, prevPlayerBottom, prevTop, aHeld, falling);
   }
   world.enemies = world.enemies.filter(
     (e) => e.y <= limit && !(e.state === 'squashed' && e.timer <= 0),
