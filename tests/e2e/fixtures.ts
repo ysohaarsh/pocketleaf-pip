@@ -70,6 +70,8 @@ export async function gotoGame(page: Page, query = '?test=1'): Promise<void> {
   await page.bringToFront();
   await page.evaluate(() => window.focus());
   await page.waitForFunction(() => document.hasFocus() && document.visibilityState === 'visible');
+  // Input tests need a running simulation; wait until the loop has actually advanced.
+  await waitTicks(page, 2);
 }
 
 /** Read a plain-data snapshot of window.__GAME__. */
@@ -96,7 +98,17 @@ export async function scene(page: Page): Promise<SceneId> {
 }
 
 export async function waitScene(page: Page, target: SceneId, timeout = 10_000): Promise<void> {
-  await page.waitForFunction((s) => window.__GAME__?.scene === s, target, { timeout });
+  try {
+    await page.waitForFunction((s) => window.__GAME__?.scene === s, target, { timeout });
+  } catch (err) {
+    // Say where the game actually is, so a timeout explains itself (stalled loop vs wrong scene).
+    const where = await page
+      .evaluate(() => ({ scene: window.__GAME__?.scene, tick: window.__GAME__?.tick }))
+      .catch(() => null);
+    throw new Error(`waitScene('${target}') timed out; game is at ${JSON.stringify(where)}`, {
+      cause: err,
+    });
+  }
 }
 
 /** Wait until the simulation has advanced `ticks` ticks past its current value. */
