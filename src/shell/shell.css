@@ -4,37 +4,37 @@
 :root {
   --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 
-  --backdrop-1: #efeee9;
+  --backdrop-1: #f1f0ea;
   --backdrop-2: #cfccc3;
   --hint-ink: #6b685f;
 
-  --body-hi: #e6e3d8;
-  --body-mid: #d6d2c4;
-  --body-lo: #c3bfb0;
-  --body-edge: #a39e8e;
-  --body-ink: #77736a;
+  --body-hi: #e3ead6;
+  --body-mid: #cfdbbf;
+  --body-lo: #b9c9a6;
+  --body-edge: #8fa47c;
+  --body-ink: #55684a;
 
-  --bezel-hi: #686d86;
-  --bezel-lo: #50546a;
-  --bezel-ink: #c9cbd8;
-  --rule-1: #4fa8a0;
-  --rule-2: #d9a441;
+  --bezel-hi: #35514a;
+  --bezel-lo: #243c36;
+  --bezel-ink: #cfe0c4;
+  --rule-1: #e0b040;
+  --rule-2: #e0b040;
 
   --window: #474e43;
   --window-off: #3a4036;
 
-  --label-ink: #33376f;
-  --brand-ink: #2c3480;
-  --leaf: #3c8c43;
-  --leaf-vein: #a7d39a;
+  --label-ink: #2e4a2a;
+  --brand-ink: #24502a;
+  --leaf: #e08a2c;
+  --leaf-vein: #ffd79a;
 
-  --dpad: #2a2a31;
-  --dpad-hi: #3c3c45;
-  --ab: #96305c;
-  --ab-hi: #c04f82;
-  --ab-lo: #6a1f40;
-  --pill: #85868f;
-  --pill-lo: #5f6068;
+  --dpad: #2c332c;
+  --dpad-hi: #3e483e;
+  --ab: #d9792a;
+  --ab-hi: #f2a058;
+  --ab-lo: #9c4f12;
+  --pill: #6f7f68;
+  --pill-lo: #4f5d4a;
 
   --led-off: #5a3434;
   --led-on: #ff4b3e;
