@@ -231,8 +231,8 @@ export interface World {
   scene: SceneId;
   /** Ticks spent in the current scene. */
   sceneTick: number;
-  /** Ids of levels in play order. */
-  levelOrder: readonly string[];
+  /** Levels in play order (plain data, so worlds stay structuredClone-able). */
+  levels: readonly LevelDef[];
   levelIndex: number;
   level: ParsedLevel;
   /** Mutable copy of level.tiles for this attempt. */
