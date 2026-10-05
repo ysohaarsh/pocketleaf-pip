@@ -13,19 +13,22 @@ level completion, Playwright e2e incl. visual baselines and perf smoke, CI + Git
 
 ## 2. Decisions (defaults chosen, no questions asked)
 
-| Decision                    | Choice                                                                          | Why                                                                                                      |
-| --------------------------- | ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| Level height                | exactly 9 rows (`LEVEL_ROWS`), horizontal scrolling only                        | matches 10×9 screen; camera y fixed                                                                      |
-| HUD                         | 2 text rows (16 px) drawn over the top of the playfield                         | levels keep the top 1–2 rows mostly sky                                                                  |
-| Player hitbox               | 10×14 for both forms; Bloom sprite adds a leaf crown                            | no crouch needed in 1-tile gaps                                                                          |
-| Glimmers                    | a tile (`Tile.Glimmer`) collected on overlap                                    | cheap, deterministic                                                                                     |
-| LCD ghosting                | blend in _shade-index space_ then quantise → canvas still has exactly 4 colours | lets the 4-colour pixel test run with LCD on; dot-grid/grain/vignette are a CSS overlay above the canvas |
-| Boot sequence               | engine scene `boot` drawn on canvas in palette                                  | same pixel pipeline; skippable                                                                           |
-| Time                        | real seconds (300)                                                              | simple                                                                                                   |
-| Game over → CONTINUE        | restart current level, 3 lives, score reset to 0                                | classic                                                                                                  |
-| Test-only levels            | in the bundle but loadable only with `?test=1&level=<id>`                       | e2e runs against the production build                                                                    |
-| Visual-verification browser | Playwright scripts (Playwright MCP not installed in this environment)           | same engine, scripted                                                                                    |
-| State updates               | `step` mutates and returns the world; tests clone with `structuredClone`        | no per-tick allocation                                                                                   |
+| Decision                    | Choice                                                                                       | Why                                                                                                      |
+| --------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Level height                | exactly 9 rows (`LEVEL_ROWS`), horizontal scrolling only                                     | matches 10×9 screen; camera y fixed                                                                      |
+| HUD                         | one 8 px row + 1 px rule on a solid strip: score · Glimmers · lives · level · hourglass time | original layout; sprites never mix with HUD text                                                         |
+| Player hitbox               | 10×14 for both forms; Bloom sprite adds a leaf crown                                         | no crouch needed in 1-tile gaps                                                                          |
+| Glimmers                    | a tile (`Tile.Glimmer`) collected on overlap                                                 | cheap, deterministic                                                                                     |
+| LCD ghosting                | blend in _shade-index space_ then quantise → canvas still has exactly 4 colours              | lets the 4-colour pixel test run with LCD on; dot-grid/grain/vignette are a CSS overlay above the canvas |
+| Boot sequence               | engine scene `boot` drawn on canvas in palette                                               | same pixel pipeline; skippable                                                                           |
+| Time                        | real seconds (300)                                                                           | simple                                                                                                   |
+| Game over → CONTINUE        | restart current level, 3 lives, score reset to 0                                             | classic                                                                                                  |
+| Spikes / pits               | instant death, even in Bloom form (spec: "hazard (spikes/pit = death)")                      | readable hazards                                                                                         |
+| Pause & music               | the level song keeps playing through pause; resume never restarts it                         | no rewind to bar 1                                                                                       |
+| Classic Green hexes         | kept exactly as the spec lists them                                                          | user-specified palette                                                                                   |
+| Test-only levels            | in the bundle but loadable only with `?test=1&level=<id>`                                    | e2e runs against the production build                                                                    |
+| Visual-verification browser | Playwright scripts (Playwright MCP not installed in this environment)                        | same engine, scripted                                                                                    |
+| State updates               | `step` mutates and returns the world; tests clone with `structuredClone`                     | no per-tick world copies                                                                                 |
 
 ## 3. Architecture
 
@@ -64,17 +67,18 @@ Engine (feat/engine) must export:
 
 ```ts
 // src/game/world.ts
-export function createWorld(opts: {
+export interface WorldOptions {
   seed: number;
-  levelOrder: readonly string[];
-  startLevel?: string;
+  levels: readonly LevelDef[]; // play order; plain data so worlds structuredClone
+  startIndex?: number;
   highScore: number;
   freezeAnim: boolean;
-  skipToLevel?: boolean;
-}): World;
+  startScene?: SceneId; // 'playing' drops straight into startIndex (used by ?level=)
+}
+export function createWorld(opts: WorldOptions): World;
 export function step(world: World, input: InputFrame): World; // one 1/60 s tick
 export function hashWorld(world: World): string; // deterministic replay hash
-// src/game/levelRegistry (engine side): getLevelDef(id) looks in LEVELS then TEST_LEVELS
+// src/engine/runtime.ts planLevels(levelOverride, test) picks LEVELS / TEST_LEVELS
 // src/engine/renderer.ts
 export function rasterize(world: World, fb: Uint8Array): void; // pure, testable
 export function createBlitter(canvas: HTMLCanvasElement): Blitter; // DOM glue

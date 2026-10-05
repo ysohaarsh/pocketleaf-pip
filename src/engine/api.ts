@@ -53,13 +53,18 @@ export interface GameHost {
   attachCanvas(canvas: HTMLCanvasElement): void;
   /** Available CSS box for the screen; host picks the largest integer scale that fits. */
   resize(cssWidth: number, cssHeight: number, devicePixelRatio: number): void;
+  /** Power switch: off stops the simulation and shows a blank LCD; on reboots into `boot`. */
   setPowered(on: boolean): void;
+  /** Apply volume/mute to audio and palette/LCD effects to the renderer. */
   setSettings(settings: Settings): void;
   /** Force the paused scene (used for blur / visibility / settings popover). */
   requestPause(): void;
   /** Called on the first user gesture so audio may start. */
   unlockAudio(): void;
+  /** useSyncExternalStore subscription; fires only when the snapshot changes. */
   subscribe(listener: () => void): () => void;
+  /** Current low-frequency state; identity is stable between changes. */
   getSnapshot(): GameSnapshot;
+  /** Stop the loop and remove every listener and test hook. Does not dispose the audio engine. */
   destroy(): void;
 }
