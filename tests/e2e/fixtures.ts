@@ -18,6 +18,17 @@ interface Fixtures {
 export const test = base.extend<Fixtures>({
   consoleGuard: [
     async ({ page }, use, testInfo) => {
+      // Headless WebKit on CI occasionally fires a native window blur / visibilitychange mid-test.
+      // The game correctly pauses and releases held input on those, which made input-driven specs
+      // flaky. Drop only *trusted* (browser-generated) focus-loss events; the pause-on-blur
+      // behaviour itself is still covered by specs that dispatch synthetic blur events.
+      await page.addInitScript(() => {
+        const dropTrusted = (e: Event): void => {
+          if (e.isTrusted) e.stopImmediatePropagation();
+        };
+        window.addEventListener('blur', dropTrusted, true);
+        document.addEventListener('visibilitychange', dropTrusted, true);
+      });
       const problems: string[] = [];
       page.on('console', (msg) => {
         if (msg.type() !== 'error') return;
