@@ -65,11 +65,14 @@ test('a controller holding START through a blur does not unpause the game', asyn
   await waitScene(page, 'playing');
   await setPad(page, { connected: true, held: [15] });
   await expect(button(page, 'right')).toHaveAttribute('data-pressed', 'true');
+  // The pad is polled once per frame, so wait for each state to be observed (data-pressed mirrors
+  // the polled input) instead of sleeping — slow CI frames otherwise swallow quick changes.
   await setPad(page, { held: [] });
+  await expect(button(page, 'right')).toHaveAttribute('data-pressed', 'false');
   await setPad(page, { held: [9] }); // START down → paused
   await waitScene(page, 'paused');
   await setPad(page, { held: [] });
-  await page.waitForTimeout(100); // let the release be sampled while paused
+  await expect(button(page, 'start')).toHaveAttribute('data-pressed', 'false');
   await setPad(page, { held: [9] }); // START down again → playing, and keep holding it
   await waitScene(page, 'playing');
   await blur(page);
