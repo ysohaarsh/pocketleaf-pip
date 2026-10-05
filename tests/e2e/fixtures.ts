@@ -53,6 +53,12 @@ export async function gotoGame(page: Page, query = '?test=1'): Promise<void> {
   await page.goto(`/${query}`);
   await page.locator(`${SCREEN}[data-ready="1"]`).waitFor({ state: 'attached' });
   await page.waitForFunction(() => window.__GAME__ !== undefined);
+  // The game pauses and releases held input on window blur (by design). Headless browsers can
+  // deliver a late blur/visibility change after load, so make sure the page is focused and visible
+  // before tests start driving input.
+  await page.bringToFront();
+  await page.evaluate(() => window.focus());
+  await page.waitForFunction(() => document.hasFocus() && document.visibilityState === 'visible');
 }
 
 /** Read a plain-data snapshot of window.__GAME__. */
