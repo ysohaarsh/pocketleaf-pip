@@ -5,30 +5,32 @@ your browser.** Guide Pip, a small sprout with big ambitions, across three hand-
 caves and sky: stomp Mossbugs, dodge Snappers, time your jumps past Flutters, collect Glimmers and
 reach the Beacon before the clock runs out.
 
-**Live demo:** https://<user>.github.io/pocketleaf-pip/
+**Live demo:** https://ysohaarsh.github.io/pocketleaf-pip/
+
+![POCKETLEAF console on desktop](docs/screenshots/desktop-play.png)
 
 ## Screenshots
 
-| Desktop                                                   | Phone (portrait)                                       |
-| --------------------------------------------------------- | ------------------------------------------------------ |
-| ![Desktop console](docs/screenshots/desktop-chromium.png) | ![Phone portrait](docs/screenshots/phone-portrait.png) |
+| 1-1 Sproutling Meadow                         | 1-2 Hollowroot Caverns                    | 1-3 Cloudstep Bridges                        |
+| --------------------------------------------- | ----------------------------------------- | -------------------------------------------- |
+| ![1-1](docs/screenshots/screen-1-1.png)       | ![1-2](docs/screenshots/screen-1-2.png)   | ![1-3](docs/screenshots/screen-1-3.png)      |
+| **Paused**                                    | **Pocket Grey palette**                   | **Title (desktop, LCD effects on)**          |
+| ![Paused](docs/screenshots/screen-paused.png) | ![Grey](docs/screenshots/screen-grey.png) | ![Title](docs/screenshots/desktop-title.png) |
 
-| Phone (landscape)                                        |
-| -------------------------------------------------------- |
-| ![Phone landscape](docs/screenshots/phone-landscape.png) |
-
-Screenshots are produced by the layout e2e spec: `SAVE_SCREENSHOTS=1 npx playwright test layout`.
+| Phone portrait (390×844)                                | Phone landscape                                           |
+| ------------------------------------------------------- | --------------------------------------------------------- |
+| ![Phone portrait](docs/screenshots/mobile-portrait.png) | ![Phone landscape](docs/screenshots/mobile-landscape.png) |
 
 ## Controls
 
-| Action            | Keyboard             | Touch / mouse   | Gamepad (standard mapping) |
-| ----------------- | -------------------- | --------------- | -------------------------- |
-| Move              | Arrow keys / WASD    | D-pad           | D-pad or left stick        |
-| Jump (A)          | Z or K               | A button        | Bottom face button (0)     |
-| Run (B)           | X or J               | B button (hold) | Left face button (2)       |
-| Start / pause     | Enter                | START           | Start (9)                  |
-| Select            | Shift or Backspace   | SELECT          | Back / Select (8)          |
-| Skip boot / intro | any key / START or A | any button      | Start or A                 |
+| Action            | Keyboard             | Touch / mouse   | Gamepad (standard mapping)        |
+| ----------------- | -------------------- | --------------- | --------------------------------- |
+| Move              | Arrow keys / WASD    | D-pad           | D-pad or left stick               |
+| Jump (A)          | Z or K               | A button        | Bottom face button (0)            |
+| Run (B)           | X or J               | B button (hold) | Right (1) or left (2) face button |
+| Start / pause     | Enter                | START           | Start (9)                         |
+| Select            | Shift or Backspace   | SELECT          | Back / Select (8)                 |
+| Skip boot / intro | any key / START or A | any button      | Start or A                        |
 
 Hold A longer to jump higher; hold B to run and clear wider gaps.
 
@@ -36,8 +38,10 @@ Hold A longer to jump higher; hold B to run and clear wider gaps.
 
 - 160×144 screen, four shades, 16 px tiles, fixed 60 Hz simulation with integer-scaled, crisp
   pixels at any window size.
-- Hero Pip with a Bloom power-up (Sun Seed), three enemy types, ? blocks, bricks, one-way platforms,
-  spikes, pits and a Beacon at each level end.
+- Hero Pip with a Bloom power-up (Sun Seed), three enemy types (Mossbug, Snapper, Flutter),
+  sparkle blocks, bricks, one-way platforms, spikes, pits, Glimmers and a Beacon at each level end.
+- Game feel: separate ground/air acceleration, run button, variable jump height, coyote time and
+  jump buffering (all tuning in `src/game/constants.ts`).
 - Three hand-made levels (1-1 grass, 1-2 cave, 1-3 sky), each verified completable by a search bot.
 - Four-channel chip-style synth built on Web Audio: original sound effects and songs.
 - POCKETLEAF shell: D-pad, A/B, START/SELECT, power switch, power LED, speaker grille, fullscreen,
@@ -92,12 +96,13 @@ npm run dev         # http://localhost:5173  (append ?test=1 for test mode)
 
 ## Testing
 
-| Command              | What it does                                                          |
-| -------------------- | --------------------------------------------------------------------- |
-| `npm run check`      | typecheck → lint → unit tests → build → e2e (must be green to merge)  |
-| `npm test`           | Vitest unit tests (`npm run coverage` adds the coverage threshold)    |
-| `npm run e2e`        | Playwright on Chromium, WebKit and a mobile (touch) profile           |
-| `npm run e2e:update` | Re-record visual baselines — do this deliberately and review the diff |
+| Command                           | What it does                                                                                             |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `npm run check`                   | typecheck → lint → unit tests → build → e2e (must be green to merge)                                     |
+| `npm test`                        | Vitest unit tests (`npm run coverage` adds the coverage threshold)                                       |
+| `npm run e2e`                     | Playwright on Chromium, WebKit and a mobile (touch) profile                                              |
+| `npm run e2e:update`              | Re-record visual baselines — do this deliberately and review the diff                                    |
+| `npx tsx scripts/genBotTracks.ts` | Re-run the search bot that proves every level is completable and rewrite `tests/fixtures/botTracks.json` |
 
 The e2e suite runs against the production build and drives the game through `?test=1` (fixed seed,
 LCD effects off, frozen animations, `window.__GAME__` probe). Visual baselines are stored **per
