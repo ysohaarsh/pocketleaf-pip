@@ -172,4 +172,42 @@ describe('game host runtime', () => {
     expect(host.getSnapshot().toast).toBe('Controller disconnected');
     host.destroy();
   });
+  it('a blur during the intro card pauses as soon as play begins', () => {
+    const { audio } = fakeAudio();
+    const host = createGameHost(opts(), audio);
+    host.attachCanvas(document.createElement('canvas'));
+    runFrames(2);
+    press('Enter');
+    runFrames(1);
+    press('Enter', 'keyup');
+    runFrames(2);
+    press('Enter');
+    runFrames(1);
+    press('Enter', 'keyup');
+    expect(host.getSnapshot().scene).toBe('intro');
+    window.dispatchEvent(new Event('blur'));
+    expect(host.getSnapshot().scene).toBe('intro');
+    runFrames(400);
+    expect(host.getSnapshot().scene).toBe('paused');
+    host.destroy();
+  });
+
+  it('powering off mid-game still saves a new high score', () => {
+    const { audio } = fakeAudio();
+    const store = new Map<string, string>();
+    const storage = {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => void store.set(k, v),
+    };
+    const host = createGameHost(opts({ levelOverride: 'test-coins', storage }), audio);
+    host.attachCanvas(document.createElement('canvas'));
+    press('ArrowRight');
+    runFrames(120);
+    press('ArrowRight', 'keyup');
+    expect(window.__GAME__!.score).toBeGreaterThan(0);
+    const score = window.__GAME__!.score;
+    host.setPowered(false);
+    expect(store.get('pocketleaf.highscore')).toBe(String(score));
+    host.destroy();
+  });
 });

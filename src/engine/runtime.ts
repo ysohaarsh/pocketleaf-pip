@@ -2,6 +2,7 @@ import type { AudioEngine } from '../audio/types';
 import { installTestHooks } from '../debug/testHooks';
 import { BOOT_CHIME_TICK, SCREEN_H, SCREEN_W } from '../game/constants';
 import { LEVELS, TEST_LEVELS } from '../game/levels';
+import { checkHighScore } from '../game/events';
 import { enterPaused } from '../game/scenes/transitions';
 import type { GameEvent, LevelDef, SceneId, Shade, SongId, World } from '../game/types';
 import { createWorld, step } from '../game/world';
@@ -188,6 +189,10 @@ export function createGameHost(opts: HostOptions, audio: AudioEngine): GameHost 
       const before = world.scene;
       step(world, input.sample());
       dispatch(world.events);
+      if (pauseQueued && world.scene !== 'intro') {
+        pauseQueued = false;
+        if (world.scene === 'playing') requestPause();
+      }
       if (world.scene !== 'paused' || before !== 'paused') dirty = true;
       if (world.scene !== before) publish();
     },
@@ -206,7 +211,10 @@ export function createGameHost(opts: HostOptions, audio: AudioEngine): GameHost 
     },
   });
 
+  /** A blur during the intro card pauses as soon as play begins, so play never starts unattended. */
+  let pauseQueued = false;
   const requestPause = (): void => {
+    if (powered && world.scene === 'intro') pauseQueued = true;
     if (!powered || world.scene !== 'playing') return;
     world.events = [];
     enterPaused(world);
@@ -260,6 +268,11 @@ export function createGameHost(opts: HostOptions, audio: AudioEngine): GameHost 
         dirty = true;
         if (canvas) loop.start();
       } else {
+        // Powering off mid-game still records a new high score.
+        world.events = [];
+        checkHighScore(world);
+        dispatch(world.events);
+        world.events = [];
         loop.stop();
         input.clearAll();
         safely(() => audio.playMusic(null));
