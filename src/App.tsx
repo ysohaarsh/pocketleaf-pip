@@ -40,7 +40,11 @@ export function App() {
   );
   const [storage] = useState(safeLocalStorage);
   const [store] = useState(() => createStore(params, storage));
-  const [settings, setSettings] = useState<Settings>(() => loadSettings(storage));
+  // Test mode starts with LCD effects off (deterministic pixels) but still honours the toggle.
+  const [settings, setSettings] = useState<Settings>(() => {
+    const loaded = loadSettings(storage);
+    return params.test ? { ...loaded, lcd: false } : loaded;
+  });
   const host = useSyncExternalStore(store.subscribe, store.getSnapshot);
 
   // Layout effect so the host exists before first paint (no empty-frame flash / layout shift).
@@ -86,7 +90,7 @@ export function App() {
           host={host}
           settings={settings}
           onSettingsChange={changeSettings}
-          lcdOverlay={settings.lcd && !params.test}
+          lcdOverlay={settings.lcd}
         />
       )}
     </div>

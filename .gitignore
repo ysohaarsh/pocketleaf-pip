@@ -10,3 +10,4 @@ blob-report
 *.local
 *.tsbuildinfo
 .claude/scheduled_tasks.lock
+scripts/.tmp

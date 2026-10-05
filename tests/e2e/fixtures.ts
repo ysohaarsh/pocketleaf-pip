@@ -107,8 +107,16 @@ export async function skipBoot(page: Page): Promise<void> {
   await waitScene(page, 'title');
 }
 
-/** boot → title → (Enter) intro → (Enter skip, or natural timeout) playing. */
+/**
+ * boot → title → (Enter) intro → (Enter skip, or natural timeout) playing.
+ * `?level=<id>` URLs start directly in 'playing', which is accepted as-is.
+ */
 export async function startGame(page: Page): Promise<void> {
+  await page.waitForFunction(() => {
+    const s = window.__GAME__?.scene;
+    return s === 'boot' || s === 'title' || s === 'playing';
+  });
+  if ((await scene(page)) === 'playing') return;
   await skipBoot(page);
   // The title may need a few ticks before it accepts input; release fully before pressing again.
   await waitTicks(page, 2);

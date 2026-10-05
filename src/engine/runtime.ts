@@ -150,7 +150,7 @@ export function createGameHost(opts: HostOptions, audio: AudioEngine): GameHost 
   };
 
   const palette = (): readonly string[] => PALETTES[settings.palette];
-  const lcdOn = (): boolean => settings.lcd && !opts.test && !opts.reducedMotion;
+  const lcdOn = (): boolean => settings.lcd && !opts.reducedMotion;
   const showOff = (): void => {
     if (!blitter || !canvas) return;
     blitter.clear(OFF_SHADE, palette());
