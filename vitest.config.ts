@@ -7,12 +7,8 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['src/game/**', 'src/engine/**'],
-      exclude: [
-        'src/engine/renderer.ts',
-        'src/engine/loop.ts',
-        'src/engine/runtime.ts',
-        '**/*.d.ts',
-      ],
+      // DOM glue only; everything pure (sim, rasterizer, loop) is measured.
+      exclude: ['src/engine/blit.ts', 'src/engine/runtime.ts', 'src/engine/api.ts', '**/*.d.ts'],
       thresholds: { lines: 80 },
       reporter: ['text-summary', 'html'],
     },
