@@ -270,6 +270,8 @@ export function createGameHost(opts: HostOptions, audio: AudioEngine): GameHost 
         world = newWorld();
         dispatch(world.events);
         world.events = [];
+        // Drop presses made while off so they cannot skip the fresh boot screen.
+        input.sample();
         dirty = true;
         if (canvas) loop.start();
       } else {

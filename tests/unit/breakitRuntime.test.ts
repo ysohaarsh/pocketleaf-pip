@@ -112,4 +112,17 @@ describe('break-it: host focus and power edge cases', () => {
     expect(scene()).toBe('playing');
     host.destroy();
   });
+
+  it('buttons pressed while powered off do not skip the boot screen on power-on', () => {
+    const host = createGameHost(opts(), audio);
+    host.attachCanvas(document.createElement('canvas'));
+    runFrames(2);
+    host.setPowered(false);
+    key('Enter');
+    key('Enter', 'keyup');
+    host.setPowered(true);
+    runFrames(2);
+    expect(scene()).toBe('boot');
+    host.destroy();
+  });
 });
