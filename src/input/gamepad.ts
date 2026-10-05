@@ -86,10 +86,11 @@ export function createGamepadPoller(
 
       let anyPressed = false;
       for (const name of BUTTON_NAMES) if (merged[name] && !prev[name]) anyPressed = true;
-      const changed = BUTTON_NAMES.some((n) => merged[n] !== prev[n]);
       prev = merged;
       if (now.size === 0) hub.clearSource(GAMEPAD_SOURCE);
-      else if (changed || removed || added) hub.setSource(GAMEPAD_SOURCE, merged);
+      // Always re-assert while connected: the hub dedupes, and this restores held buttons after
+      // hub.clearAll() (e.g. on window blur) even when the pad state itself did not change.
+      else hub.setSource(GAMEPAD_SOURCE, merged);
       return anyPressed;
     },
     connectedCount: () => known.size,

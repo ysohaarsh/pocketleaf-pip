@@ -62,7 +62,8 @@ export function buttonForKey(e: Pick<KeyEventLike, 'key' | 'code'>): ButtonName 
 }
 
 /** Stable id of a physical key across keydown/keyup (key text survives synthetic events). */
-const keyId = (e: Pick<KeyEventLike, 'key' | 'code'>): string => (e.key ? e.key.toLowerCase() : e.code);
+const keyId = (e: Pick<KeyEventLike, 'key' | 'code'>): string =>
+  e.key ? e.key.toLowerCase() : e.code;
 
 /** True when the event comes from a form control, editable content or a [data-no-game-keys] area. */
 export function isFromEditable(target: EventTarget | null): boolean {
@@ -71,6 +72,13 @@ export function isFromEditable(target: EventTarget | null): boolean {
   if (!el || typeof el.closest !== 'function') return false;
   if (el.isContentEditable) return true;
   return el.closest('input, select, textarea, [data-no-game-keys]') !== null;
+}
+
+/** True for focusable UI controls (not the on-screen game buttons, which carry data-pressed). */
+export function isFocusedControl(target: EventTarget | null): boolean {
+  const el = target as Partial<Pick<HTMLElement, 'closest'>> | null;
+  if (!el || typeof el.closest !== 'function') return false;
+  return el.closest('button:not([data-pressed]), a[href], [role="switch"]') !== null;
 }
 
 /**
@@ -86,6 +94,8 @@ export function attachKeyboard(hub: InputHub, target: KeyTarget): () => void {
     const e = ev as unknown as KeyEventLike;
     const button = buttonForKey(e);
     if (!button || isFromEditable(e.target)) return;
+    // Enter on a focused toolbar button / switch activates it instead of pressing START.
+    if (button === 'start' && isFocusedControl(e.target)) return;
     e.preventDefault();
     if (e.repeat) return;
     const keys = down.get(button) ?? new Set<string>();

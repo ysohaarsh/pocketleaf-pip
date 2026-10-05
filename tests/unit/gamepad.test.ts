@@ -60,6 +60,17 @@ describe('gamepad mapping', () => {
     expect(poller.connectedCount()).toBe(0);
   });
 
+  it('re-asserts held buttons after the hub is cleared (e.g. on window blur)', () => {
+    const hub = new InputHub();
+    const poller = createGamepadPoller(hub, () => [pad(0, [0])]);
+    poller.poll();
+    expect(hub.getHeld().a).toBe(true);
+    hub.clearAll();
+    expect(hub.getHeld().a).toBe(false);
+    poller.poll();
+    expect(hub.getHeld().a).toBe(true);
+  });
+
   it('survives a throwing getGamepads', () => {
     const hub = new InputHub();
     const poller = createGamepadPoller(hub, () => {
