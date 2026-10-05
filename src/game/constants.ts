@@ -112,7 +112,7 @@ export const CAMERA_MAX_STEP = 4;
 
 // --- Beacon ------------------------------------------------------------------
 /** Height of the Beacon pole in tiles, counted upward from (and including) the F tile. */
-export const BEACON_POLE_TILES = 6;
+export const BEACON_POLE_TILES = 5;
 /** Pip's slide speed down the pole (px/tick). */
 export const CLEAR_SLIDE_SPEED = 2;
 /** Seconds of remaining time converted into score per tick during the clear tally. */

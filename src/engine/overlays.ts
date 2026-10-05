@@ -1,6 +1,6 @@
 import { BOOT_CHIME_TICK, SCREEN_H, SCREEN_W, TICK_RATE } from '../game/constants';
 import type { Shade, World } from '../game/types';
-import { box, drawText, drawTextCentered, fill, pad, plot, textWidth } from './draw';
+import { box, drawText, drawTextCentered, fill, fillRect, pad, plot, textWidth } from './draw';
 
 /** Animation frame index: floor(tick / ticksPerFrame) mod frames, or 0 when animations are frozen. */
 export function phase(world: World, ticksPerFrame: number, frames: number): number {
@@ -15,9 +15,15 @@ function blinkOn(world: World): boolean {
 /** HUD text column → x (6 px advance, 1 px margin). */
 const col = (c: number): number => c * 6 + 1;
 
+/** Height of the HUD strip in px (two 8 px text rows). */
+export const HUD_H = 16;
+
 /** Two text rows over the top of the playfield: name/Glimmers/world/time and their values. */
 export function drawHud(fb: Uint8Array, world: World): void {
-  const ink: Shade = world.level.def.theme === 'cave' ? 3 : 0;
+  const cave = world.level.def.theme === 'cave';
+  const ink: Shade = cave ? 3 : 0;
+  // Solid backing so sprites passing under the HUD never mix with its text.
+  fillRect(fb, 0, 0, SCREEN_W, HUD_H, cave ? 0 : 3);
   const secs = Math.ceil(world.timeTicks / TICK_RATE);
   drawText(fb, 'PIP', col(0), 1, ink);
   drawText(fb, `$x${pad(world.coins, 2)}`, col(9), 1, ink);
