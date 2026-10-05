@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  # Manual run: regenerates Linux visual baselines (see the update-snapshots job).
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: typecheck · lint · unit · build · e2e
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      # Unit tests with the coverage threshold from vitest.config.ts.
+      - run: npm run coverage
+      - run: npm run build
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium webkit
+
+      # Visual baselines are per platform (tests/e2e/__screenshots__/<project>/linux/...).
+      # Linux baselines are generated on CI by running this workflow manually
+      # (workflow_dispatch → update-snapshots job) and committing the uploaded artifact,
+      # or locally in a Linux container with `npm run e2e:update`.
+      - name: Playwright tests
+        run: npx playwright test
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+
+  update-snapshots:
+    name: Regenerate Linux visual baselines
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium webkit
+
+      # Only the visual spec produces baselines; other failures must not block regeneration.
+      - name: Update snapshots
+        run: npx playwright test tests/e2e/visual.spec.ts --update-snapshots
+
+      - name: Upload baselines
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-screenshots
+          path: tests/e2e/__screenshots__/
+          retention-days: 14
