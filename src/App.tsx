@@ -57,11 +57,9 @@ export function App() {
 
   useEffect(() => {
     if (!host) return;
-    const unlock = (): void => {
-      host.unlockAudio();
-      window.removeEventListener('pointerdown', unlock, true);
-      window.removeEventListener('keydown', unlock, true);
-    };
+    // Kept for the app lifetime: unlockAudio() is idempotent and cheap, and re-running it on each
+    // gesture resumes a context that a failed first unlock or an OS interruption left suspended.
+    const unlock = (): void => host.unlockAudio();
     window.addEventListener('pointerdown', unlock, true);
     window.addEventListener('keydown', unlock, true);
     const onHidden = (): void => {
