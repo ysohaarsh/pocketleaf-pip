@@ -5,7 +5,7 @@ import { useHeldButtons } from './useGameHost';
 const NAMES = ['select', 'start'] as const;
 const LABELS = { select: 'Select', start: 'Start' } as const;
 
-/** SELECT and START: small angled pills with a generous invisible hit area. */
+/** SELECT and START: small level pills side by side, with a generous invisible hit area. */
 export function MetaButtons({ input }: { input: InputHub }) {
   const held = useHeldButtons(input);
   const bind = useButtonGroup(input, NAMES);

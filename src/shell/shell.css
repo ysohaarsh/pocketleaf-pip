@@ -17,14 +17,13 @@
   --bezel-hi: #35514a;
   --bezel-lo: #243c36;
   --bezel-ink: #cfe0c4;
-  --rule-1: #e0b040;
-  --rule-2: #e0b040;
 
   --window: #474e43;
   --window-off: #3a4036;
 
   --label-ink: #2e4a2a;
   --brand-ink: #24502a;
+  --brand-ink-2: #4f7a3e;
   --leaf: #e08a2c;
   --leaf-vein: #ffd79a;
 
@@ -36,8 +35,10 @@
   --pill: #6f7f68;
   --pill-lo: #4f5d4a;
 
-  --led-off: #5a3434;
-  --led-on: #ff4b3e;
+  --led-off: #5b5a3c;
+  --led-on: #ffc24a;
+  --led-glow: rgba(255, 186, 60, 0.65);
+  --grille: #8f9a80;
 
   --focus: #2f6bff;
   --panel-bg: #fbfaf6;
@@ -172,6 +173,22 @@ body {
   pointer-events: none;
 }
 
+.console__status {
+  display: flex;
+  align-items: center;
+  gap: 2cqw;
+}
+
+/* Status LED beside the power switch (amber when on). */
+.pwr {
+  display: flex;
+  align-items: center;
+  gap: 1cqw;
+  color: var(--body-ink);
+  font: 700 max(9px, 1.8cqw) / 1 var(--font);
+  letter-spacing: 0.12em;
+}
+
 /* ---------------------------------------------------------------- power switch */
 
 .power {
@@ -255,10 +272,11 @@ body {
   justify-self: center;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-end;
+  gap: 1.4cqw;
   margin-top: 1.5cqw;
-  padding: 2.4cqw 5cqw 5cqw;
-  border-radius: 2.5cqw 2.5cqw 11cqw 2.5cqw;
+  padding: 4.5cqw 5cqw 2.4cqw;
+  border-radius: 4cqw;
   background: linear-gradient(175deg, var(--bezel-hi), var(--bezel-lo));
   box-shadow:
     inset 0 0.5cqw 0.8cqw rgba(0, 0, 0, 0.35),
@@ -266,64 +284,32 @@ body {
     0 0.3cqw 0 rgba(255, 255, 255, 0.55);
 }
 
-.bezel__header {
-  display: flex;
-  align-items: center;
-  gap: 1.6cqw;
-  width: 100%;
-  height: 4.6cqw;
-  margin-bottom: 1.2cqw;
-}
-
-.bezel__rule {
-  flex: 1;
-  height: 1.5cqw;
-  border-top: 0.45cqw solid var(--rule-1);
-  border-bottom: 0.45cqw solid var(--rule-2);
-}
-
 .bezel__caption {
   color: var(--bezel-ink);
-  font: 600 italic 2cqw / 1 var(--font);
-  letter-spacing: 0.14em;
+  opacity: 0.75;
+  font: 600 1.8cqw / 1 var(--font);
+  letter-spacing: 0.12em;
   white-space: nowrap;
 }
 
-.bezel__body {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 2.5cqw;
-}
-
-.bezel__power {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.2cqw;
-  width: 7cqw;
-  margin-bottom: 18cqw;
-}
-
-.bezel__power-label {
-  color: var(--bezel-ink);
-  font: 700 1.7cqw / 1 var(--font);
-  letter-spacing: 0.1em;
-}
-
 .led {
-  width: 2.4cqw;
-  height: 2.4cqw;
+  flex: none;
+  width: 2cqw;
+  height: 2cqw;
+  min-width: 8px;
+  min-height: 8px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #8a5a5a, var(--led-off));
-  box-shadow: inset 0 0.2cqw 0.3cqw rgba(0, 0, 0, 0.5);
+  background: radial-gradient(circle at 35% 35%, #8c8a62, var(--led-off));
+  box-shadow:
+    inset 0 0.2cqw 0.3cqw rgba(0, 0, 0, 0.5),
+    0 0.15cqw 0 rgba(255, 255, 255, 0.6);
 }
 
 .led[data-on='true'] {
-  background: radial-gradient(circle at 35% 35%, #ffd0c8, var(--led-on) 45%, #b5150c);
+  background: radial-gradient(circle at 35% 35%, #fff4cf, var(--led-on) 50%, #c77d12);
   box-shadow:
-    0 0 1.2cqw 0.3cqw rgba(255, 75, 62, 0.6),
-    inset 0 -0.2cqw 0.3cqw rgba(0, 0, 0, 0.3);
+    0 0 1.2cqw 0.3cqw var(--led-glow),
+    inset 0 -0.2cqw 0.3cqw rgba(0, 0, 0, 0.25);
 }
 
 .screen {
@@ -419,27 +405,30 @@ body {
 
 .brand {
   grid-area: brand;
+  justify-self: center;
   display: flex;
-  align-items: center;
-  gap: 1.2cqw;
-  margin: 2.6cqw 0 0 1cqw;
+  align-items: baseline;
+  margin: 3cqw 0 0;
   color: var(--brand-ink);
-  font: italic 800 6cqw / 1 var(--font);
-  letter-spacing: 0.01em;
+  font:
+    800 5.2cqw / 1 'Avenir Next',
+    'Nunito',
+    'Varela Round',
+    var(--font);
+  letter-spacing: 0.14em;
+  text-shadow: 0 0.15cqw 0 rgba(255, 255, 255, 0.6);
 }
 
-.brand__word {
-  background: linear-gradient(180deg, #3a44a0, var(--brand-ink));
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  filter: drop-shadow(0 0.15cqw 0 rgba(255, 255, 255, 0.6));
+.brand__leafword {
+  color: var(--brand-ink-2);
 }
 
 .brand__leaf {
-  width: 5.2cqw;
-  height: 5.2cqw;
-  transform: translateY(-0.6cqw) rotate(-8deg);
+  align-self: center;
+  width: 4.4cqw;
+  height: 4.4cqw;
+  margin-left: 0.2cqw;
+  transform: translateY(-1.2cqw) rotate(-8deg);
 }
 
 .brand__leaf path {
@@ -622,28 +611,16 @@ body {
 
 /* ---------------------------------------------------------------- A / B */
 
+/* Diagonal pair without rotating the group: B sits lower-left, A upper-right. */
 .action {
   grid-area: action;
   position: relative;
   justify-self: end;
   align-self: center;
   display: flex;
-  gap: 4cqw;
-  padding: 1.6cqw 2cqw;
-  transform: rotate(-25deg);
-}
-
-/* Subtle recessed plate under the pair. */
-.action::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: calc(var(--ab-size) + 3.2cqw);
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.07);
-  box-shadow: inset 0 0.3cqw 0.5cqw rgba(0, 0, 0, 0.1);
+  align-items: flex-start;
+  gap: 3.4cqw;
+  margin-right: 1cqw;
 }
 
 .action__slot {
@@ -651,10 +628,32 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2.2cqw;
+  gap: 2.6cqw;
+}
+
+.action__slot--b {
+  margin-top: 7cqw;
+}
+
+/* Individual recessed ring around each button. */
+.action__slot::before {
+  content: '';
+  position: absolute;
+  top: calc(var(--ab-size) * -0.11);
+  left: 50%;
+  width: calc(var(--ab-size) * 1.22);
+  min-width: calc(48px * 1.22);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.06);
+  box-shadow:
+    inset 0 0.35cqw 0.5cqw rgba(0, 0, 0, 0.16),
+    0 0.2cqw 0 rgba(255, 255, 255, 0.55);
 }
 
 .action__btn {
+  position: relative;
   width: var(--ab-size);
   min-width: 48px;
   aspect-ratio: 1;
@@ -690,7 +689,7 @@ body {
   grid-area: meta;
   display: flex;
   justify-content: center;
-  gap: 2cqw;
+  gap: 1cqw;
   padding-bottom: 2cqw;
 }
 
@@ -699,13 +698,12 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1.6cqw;
+  gap: 1.8cqw;
   min-width: max(48px, 15cqw);
   min-height: max(48px, 11cqw);
   padding: 0;
   border: 0;
   background: none;
-  transform: rotate(-25deg);
 }
 
 .meta__pill {
@@ -714,9 +712,9 @@ body {
   border-radius: 999px;
   background: linear-gradient(var(--pill), var(--pill-lo));
   box-shadow:
-    0 0 0 0.5cqw rgba(0, 0, 0, 0.08),
-    0 0.45cqw 0 #4b4c53,
-    0 0.7cqw 0.8cqw rgba(0, 0, 0, 0.3);
+    0 0 0 0.6cqw rgba(0, 0, 0, 0.07),
+    0 0.45cqw 0 var(--pill-lo),
+    0 0.7cqw 0.8cqw rgba(0, 0, 0, 0.28);
   transition:
     transform 40ms linear,
     box-shadow 40ms linear;
@@ -725,31 +723,32 @@ body {
 .meta__btn[data-pressed='true'] .meta__pill {
   transform: translateY(0.35cqw);
   box-shadow:
-    0 0 0 0.5cqw rgba(0, 0, 0, 0.08),
-    0 0.1cqw 0 #4b4c53,
-    0 0.2cqw 0.3cqw rgba(0, 0, 0, 0.3);
+    0 0 0 0.6cqw rgba(0, 0, 0, 0.07),
+    0 0.1cqw 0 var(--pill-lo),
+    0 0.2cqw 0.3cqw rgba(0, 0, 0, 0.28);
 }
 
 /* ---------------------------------------------------------------- speaker */
 
+/* Round cluster of small perforations, masked to a circle. */
 .speaker {
   position: absolute;
-  right: 7cqw;
-  bottom: 9cqw;
-  display: flex;
-  gap: 2cqw;
-  transform: rotate(-28deg);
+  right: 8cqw;
+  bottom: 8cqw;
+  width: 15cqw;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(
+      circle at 50% 45%,
+      rgba(0, 0, 0, 0.55) 0 0.55cqw,
+      rgba(255, 255, 255, 0.5) 0.6cqw 0.8cqw,
+      transparent 0.85cqw
+    )
+    center / 3cqw 3cqw;
+  -webkit-mask-image: radial-gradient(circle, #000 68%, transparent 69%);
+  mask-image: radial-gradient(circle, #000 68%, transparent 69%);
+  opacity: 0.55;
   pointer-events: none;
-}
-
-.speaker__slot {
-  width: 1.9cqw;
-  height: 13cqw;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #8f8a7b, #aaa596);
-  box-shadow:
-    inset 0 0.4cqw 0.5cqw rgba(0, 0, 0, 0.45),
-    0 0.2cqw 0 rgba(255, 255, 255, 0.6);
 }
 
 /* ---------------------------------------------------------------- settings popover */
@@ -903,30 +902,17 @@ body {
   }
 
   .bezel {
-    padding: 2.4cqw 3cqw 4cqw;
-  }
-
-  .bezel__body {
-    display: block;
-  }
-
-  /* Not enough side room on narrow phones: the LED moves into the header row. */
-  .bezel__power {
-    position: absolute;
-    top: -6cqw;
-    left: 0;
-    flex-direction: row;
-    width: auto;
-    margin: 0;
-  }
-
-  .bezel__header {
-    padding-left: 15cqw;
+    padding: 3.5cqw 3.5cqw 2.4cqw;
   }
 
   .speaker {
-    bottom: 6cqw;
+    bottom: 5cqw;
     right: 5cqw;
+  }
+
+  .action {
+    gap: 2.6cqw;
+    margin-right: 2.5cqw;
   }
 }
 
@@ -998,50 +984,23 @@ body {
   .bezel {
     align-self: start;
     margin-top: 0;
-    padding: 1.6cqh 2.4cqh 2.6cqh;
-    border-radius: 2cqh 2cqh 8cqh 2cqh;
-  }
-
-  .bezel__header {
-    height: 4cqh;
-    margin-bottom: 1cqh;
-    gap: 1.4cqh;
-  }
-
-  .bezel__rule {
-    height: 1.4cqh;
-    border-width: 0.4cqh;
+    gap: 1.2cqh;
+    padding: 2.6cqh 2.6cqh 1.6cqh;
+    border-radius: 3cqh;
   }
 
   .bezel__caption {
+    font-size: 2.2cqh;
+  }
+
+  .pwr {
     font-size: 2.4cqh;
-  }
-
-  .bezel__body {
-    display: block;
-  }
-
-  .bezel__power {
-    position: absolute;
-    top: -5cqh;
-    left: 0;
-    flex-direction: row;
-    width: auto;
-    margin: 0;
     gap: 1cqh;
   }
 
-  .bezel__header {
-    padding-left: 14cqh;
-  }
-
   .led {
-    width: 2.6cqh;
-    height: 2.6cqh;
-  }
-
-  .bezel__power-label {
-    font-size: 2cqh;
+    width: 2.4cqh;
+    height: 2.4cqh;
   }
 
   .dpad {
@@ -1051,11 +1010,16 @@ body {
 
   .action {
     justify-self: center;
-    gap: 5cqh;
+    margin: 0;
+    gap: 4cqh;
   }
 
   .action__slot {
     gap: 3cqh;
+  }
+
+  .action__slot--b {
+    margin-top: 10cqh;
   }
 
   .meta {

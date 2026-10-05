@@ -5,7 +5,7 @@ import { useHeldButtons } from './useGameHost';
 const NAMES = ['b', 'a'] as const;
 const LABELS = { a: 'A button', b: 'B button' } as const;
 
-/** A and B, angled on a diagonal (B lower-left, A upper-right); a thumb may roll between them. */
+/** A and B on a diagonal (B lower-left, A upper-right), each in its own ring; a thumb may roll between them. */
 export function ActionButtons({ input }: { input: InputHub }) {
   const held = useHeldButtons(input);
   const bind = useButtonGroup(input, NAMES);
