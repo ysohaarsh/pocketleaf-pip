@@ -1,4 +1,94 @@
-// STUB — replaced by feat/shell.
+import { useEffect, useLayoutEffect, useState, useSyncExternalStore } from 'react';
+import { createAudioEngine } from './audio';
+import type { Settings } from './engine/api';
+import { createGameHost } from './engine/runtime';
+import { Console } from './shell/Console';
+import { createHostStore } from './shell/hostStore';
+import { loadSettings, safeLocalStorage, saveSettings } from './shell/settingsStore';
+import { parseUrlParams, type UrlParams } from './shell/urlParams';
+
+function prefersReducedMotion(): boolean {
+  return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+}
+
+function createStore(params: UrlParams, storage: Storage | null) {
+  return createHostStore(() => {
+    const audio = createAudioEngine();
+    const host = createGameHost(
+      {
+        test: params.test,
+        levelOverride: params.levelOverride,
+        seed: params.seed,
+        reducedMotion: prefersReducedMotion(),
+        storage,
+      },
+      audio,
+    );
+    return {
+      host,
+      dispose: () => {
+        host.destroy();
+        audio.dispose();
+      },
+    };
+  });
+}
+
 export function App() {
-  return <main aria-label="POCKETLEAF handheld">POCKETLEAF</main>;
+  const [params] = useState(() =>
+    parseUrlParams(window.location.search, () => Math.floor(Math.random() * 0x100000000)),
+  );
+  const [storage] = useState(safeLocalStorage);
+  const [store] = useState(() => createStore(params, storage));
+  const [settings, setSettings] = useState<Settings>(() => loadSettings(storage));
+  const host = useSyncExternalStore(store.subscribe, store.getSnapshot);
+
+  // Layout effect so the host exists before first paint (no empty-frame flash / layout shift).
+  useLayoutEffect(() => store.acquire(), [store]);
+
+  // Applies persisted settings at startup and every change afterwards (also to a recreated host).
+  useEffect(() => {
+    host?.setSettings(settings);
+  }, [host, settings]);
+
+  useEffect(() => {
+    if (!host) return;
+    const unlock = (): void => {
+      host.unlockAudio();
+      window.removeEventListener('pointerdown', unlock, true);
+      window.removeEventListener('keydown', unlock, true);
+    };
+    window.addEventListener('pointerdown', unlock, true);
+    window.addEventListener('keydown', unlock, true);
+    const onHidden = (): void => {
+      if (document.visibilityState === 'hidden') host.requestPause();
+    };
+    const onBlur = (): void => host.requestPause();
+    window.addEventListener('blur', onBlur);
+    document.addEventListener('visibilitychange', onHidden);
+    return () => {
+      window.removeEventListener('pointerdown', unlock, true);
+      window.removeEventListener('keydown', unlock, true);
+      window.removeEventListener('blur', onBlur);
+      document.removeEventListener('visibilitychange', onHidden);
+    };
+  }, [host]);
+
+  const changeSettings = (next: Settings): void => {
+    setSettings(next);
+    saveSettings(storage, next);
+  };
+
+  return (
+    <div className="app">
+      {host && (
+        <Console
+          host={host}
+          settings={settings}
+          onSettingsChange={changeSettings}
+          lcdOverlay={settings.lcd && !params.test}
+        />
+      )}
+    </div>
+  );
 }
