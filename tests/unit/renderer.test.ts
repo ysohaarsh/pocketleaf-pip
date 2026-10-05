@@ -109,22 +109,28 @@ describe('renderer', () => {
     }
   });
 
-  it('draws the HUD text on the top two rows', () => {
+  it('draws a one-row HUD on a solid strip with a rule below', () => {
     const w = makeWorld([level(MAP)]);
+    w.score = 888888;
     const fb = fbOf(w);
-    // "PIP" at column 0 of row 1 and the score digits on row 2 are inked in shade 0 over the sky.
-    for (const [x, y] of [
-      [1, 1],
-      [17, 7],
-      [1, 9],
-      [35, 15],
-    ] as const)
-      expect(px(fb, x, y)).toBe(0);
-    // The gap between "PIP" and the Glimmer counter stays sky.
-    expect(px(fb, 30, 4)).toBe(3);
-    // Cave HUD inks in the lightest shade.
+    const inked = (x0: number, x1: number): number => {
+      let n = 0;
+      for (let y = 1; y < 8; y++) for (let x = x0; x < x1; x++) if (px(fb, x, y) === 0) n++;
+      return n;
+    };
+    // Score digits occupy columns 0-5 (x 1..36) and are inked in shade 0 over the sky strip.
+    expect(inked(1, 36)).toBeGreaterThan(30);
+    // The gap after the score stays sky.
+    for (let y = 1; y < 8; y++) expect(px(fb, 38, y)).toBe(3);
+    // Hourglass top bar at column 22.
+    for (let x = 133; x < 138; x++) expect(px(fb, x, 1)).toBe(0);
+    // 1 px rule under the strip, then the playfield.
+    for (let x = 0; x < 160; x += 17) expect(px(fb, x, 9)).toBe(2);
+    // Cave HUD: dark strip, light ink, mid rule.
     const cave = fbOf(makeWorld([level(MAP, { theme: 'cave' })]));
-    expect(px(cave, 1, 1)).toBe(3);
+    expect(px(cave, 133, 1)).toBe(3);
+    expect(px(cave, 38, 4)).toBe(0);
+    expect(px(cave, 50, 9)).toBe(1);
   });
 
   it('paused darkens every shade by one and shows a PAUSED box', () => {

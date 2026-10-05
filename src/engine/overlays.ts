@@ -15,24 +15,32 @@ function blinkOn(world: World): boolean {
 /** HUD text column → x (6 px advance, 1 px margin). */
 const col = (c: number): number => c * 6 + 1;
 
-/** Height of the HUD strip in px (two 8 px text rows). */
-export const HUD_H = 16;
+/** Height of the HUD strip in px: one 8 px text row plus a 1 px rule. */
+export const HUD_H = 10;
 
-/** Two text rows over the top of the playfield: name/Glimmers/world/time and their values. */
+/** 5x7 hourglass drawn before the timer (the font has no clock glyph). */
+const HOURGLASS = ['#####', '#...#', '.#.#.', '..#..', '.#.#.', '#...#', '#####'];
+
+/**
+ * One compact row on a solid strip: score · Glimmers · lives · level · hourglass time.
+ * e.g. "001200  $x07  %x3   1-2   ⧗287"
+ */
 export function drawHud(fb: Uint8Array, world: World): void {
   const cave = world.level.def.theme === 'cave';
   const ink: Shade = cave ? 3 : 0;
   // Solid backing so sprites passing under the HUD never mix with its text.
   fillRect(fb, 0, 0, SCREEN_W, HUD_H, cave ? 0 : 3);
+  fillRect(fb, 0, HUD_H - 1, SCREEN_W, 1, cave ? 1 : 2);
   const secs = Math.ceil(world.timeTicks / TICK_RATE);
-  drawText(fb, 'PIP', col(0), 1, ink);
-  drawText(fb, `$x${pad(world.coins, 2)}`, col(9), 1, ink);
-  drawText(fb, 'WORLD', col(15), 1, ink);
-  drawText(fb, 'TIME', col(21), 1, ink);
-  drawText(fb, pad(world.score, 6), col(0), 9, ink);
-  drawText(fb, `%x${world.lives}`, col(9), 9, ink);
-  drawText(fb, world.level.def.label, col(16), 9, ink);
-  drawText(fb, pad(secs, 3), col(22), 9, ink);
+  drawText(fb, pad(world.score, 6), col(0), 1, ink);
+  drawText(fb, `$x${pad(world.coins, 2)}`, col(7), 1, ink);
+  drawText(fb, `%x${world.lives}`, col(12), 1, ink);
+  drawText(fb, world.level.def.label, col(17), 1, ink);
+  HOURGLASS.forEach((row, dy) => {
+    for (let dx = 0; dx < row.length; dx++)
+      if (row[dx] === '#') plot(fb, col(22) + dx, 1 + dy, ink);
+  });
+  drawText(fb, pad(secs, 3), col(23), 1, ink);
 }
 
 function drawBoot(fb: Uint8Array, world: World): void {
