@@ -1,6 +1,6 @@
 import type { AudioEngine } from '../audio/types';
 import { installTestHooks } from '../debug/testHooks';
-import { BOOT_CHIME_TICK, SCREEN_H, SCREEN_W } from '../game/constants';
+import { BOOT_CHIME_TICK, MAX_SCORE, SCREEN_H, SCREEN_W } from '../game/constants';
 import { LEVELS, TEST_LEVELS } from '../game/levels';
 import { checkHighScore } from '../game/events';
 import { enterPaused } from '../game/scenes/transitions';
@@ -31,6 +31,8 @@ const OFF_SHADE: Shade = 1;
 const REDUCED_BOOT_TICK = BOOT_CHIME_TICK - 10;
 /** Extra frames presented after the last change so LCD ghosting settles. */
 const GHOST_SETTLE_FRAMES = 12;
+/** Scenes that move on to 'playing' (directly or via the intro card) without any input. */
+const LEADS_TO_PLAY: ReadonlySet<SceneId> = new Set<SceneId>(['intro', 'dying', 'clear']);
 
 interface LevelPlan {
   levels: readonly LevelDef[];
@@ -52,7 +54,7 @@ export function planLevels(levelOverride: string | null, test: boolean): LevelPl
 function readHighScore(storage: HostOptions['storage']): number {
   try {
     const n = parseInt(storage?.getItem(HIGH_SCORE_KEY) ?? '0', 10);
-    return Number.isFinite(n) && n > 0 ? n : 0;
+    return Number.isFinite(n) && n > 0 ? Math.min(n, MAX_SCORE) : 0;
   } catch {
     return 0;
   }
@@ -189,7 +191,7 @@ export function createGameHost(opts: HostOptions, audio: AudioEngine): GameHost 
       const before = world.scene;
       step(world, input.sample());
       dispatch(world.events);
-      if (pauseQueued && world.scene !== 'intro') {
+      if (pauseQueued && !LEADS_TO_PLAY.has(world.scene)) {
         pauseQueued = false;
         if (world.scene === 'playing') requestPause();
       }
@@ -211,10 +213,13 @@ export function createGameHost(opts: HostOptions, audio: AudioEngine): GameHost 
     },
   });
 
-  /** A blur during the intro card pauses as soon as play begins, so play never starts unattended. */
+  /**
+   * A blur during a scene that hands over to play on its own (intro card, dying, Beacon clear)
+   * pauses as soon as play begins, so play never starts unattended.
+   */
   let pauseQueued = false;
   const requestPause = (): void => {
-    if (powered && world.scene === 'intro') pauseQueued = true;
+    if (powered && LEADS_TO_PLAY.has(world.scene)) pauseQueued = true;
     if (!powered || world.scene !== 'playing') return;
     world.events = [];
     enterPaused(world);
@@ -265,6 +270,8 @@ export function createGameHost(opts: HostOptions, audio: AudioEngine): GameHost 
         world = newWorld();
         dispatch(world.events);
         world.events = [];
+        // Drop presses made while off so they cannot skip the fresh boot screen.
+        input.sample();
         dirty = true;
         if (canvas) loop.start();
       } else {

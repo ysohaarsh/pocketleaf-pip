@@ -36,6 +36,11 @@ export class InputHub {
   private lastSampled: Buttons = emptyButtons();
   /** Presses seen since the last sample, so sub-tick taps are never lost. */
   private latched: Buttons = emptyButtons();
+  /**
+   * Buttons dropped by clearAll() since the last sample. A source re-asserting one of them before
+   * the next sample (a gamepad still held after a blur) restores it as held, not as a new press.
+   */
+  private cleared: Buttons = emptyButtons();
   private readonly listeners = new Set<() => void>();
 
   /** Replace the held state contributed by one source. */
@@ -58,6 +63,7 @@ export class InputHub {
 
   /** Release everything (e.g. on window blur). */
   clearAll(): void {
+    for (const name of BUTTON_NAMES) if (this.merged[name]) this.cleared[name] = true;
     this.sources.clear();
     this.recompute();
   }
@@ -75,6 +81,7 @@ export class InputHub {
     const frame = makeFrame(this.lastSampled, this.merged, this.latched);
     this.lastSampled = { ...this.merged };
     this.latched = emptyButtons();
+    this.cleared = emptyButtons();
     return frame;
   }
 
@@ -86,7 +93,7 @@ export class InputHub {
     let changed = false;
     for (const name of BUTTON_NAMES) {
       if (next[name] !== this.merged[name]) changed = true;
-      if (next[name] && !this.merged[name]) this.latched[name] = true;
+      if (next[name] && !this.merged[name] && !this.cleared[name]) this.latched[name] = true;
     }
     if (!changed) return;
     this.merged = next;
