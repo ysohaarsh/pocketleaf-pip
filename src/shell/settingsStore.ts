@@ -53,3 +53,17 @@ export function safeLocalStorage(): Storage | null {
     return null;
   }
 }
+
+/**
+ * What to write to storage for a settings change. `storedLcd` is the LCD value currently on disk;
+ * it only follows `next.lcd` when this change actually toggled LCD. That keeps a session-forced
+ * value (test mode starts with lcd:false) from leaking into the persisted settings.
+ */
+export function settingsToPersist(
+  prev: Settings,
+  next: Settings,
+  storedLcd: boolean,
+): { toStore: Settings; storedLcd: boolean } {
+  const lcd = next.lcd !== prev.lcd ? next.lcd : storedLcd;
+  return { toStore: { ...next, lcd }, storedLcd: lcd };
+}

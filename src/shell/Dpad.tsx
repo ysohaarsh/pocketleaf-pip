@@ -29,6 +29,7 @@ export function Dpad({ input }: { input: InputHub }) {
         <button
           key={dir}
           type="button"
+          tabIndex={-1}
           className={`dpad__arm dpad__arm--${dir}`}
           aria-label={label}
           data-testid={`btn-${dir}`}
