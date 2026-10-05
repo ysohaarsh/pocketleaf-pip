@@ -31,6 +31,8 @@ const OFF_SHADE: Shade = 1;
 const REDUCED_BOOT_TICK = BOOT_CHIME_TICK - 10;
 /** Extra frames presented after the last change so LCD ghosting settles. */
 const GHOST_SETTLE_FRAMES = 12;
+/** Scenes that move on to 'playing' (directly or via the intro card) without any input. */
+const LEADS_TO_PLAY: ReadonlySet<SceneId> = new Set<SceneId>(['intro', 'dying', 'clear']);
 
 interface LevelPlan {
   levels: readonly LevelDef[];
@@ -189,7 +191,7 @@ export function createGameHost(opts: HostOptions, audio: AudioEngine): GameHost 
       const before = world.scene;
       step(world, input.sample());
       dispatch(world.events);
-      if (pauseQueued && world.scene !== 'intro') {
+      if (pauseQueued && !LEADS_TO_PLAY.has(world.scene)) {
         pauseQueued = false;
         if (world.scene === 'playing') requestPause();
       }
@@ -211,10 +213,13 @@ export function createGameHost(opts: HostOptions, audio: AudioEngine): GameHost 
     },
   });
 
-  /** A blur during the intro card pauses as soon as play begins, so play never starts unattended. */
+  /**
+   * A blur during a scene that hands over to play on its own (intro card, dying, Beacon clear)
+   * pauses as soon as play begins, so play never starts unattended.
+   */
   let pauseQueued = false;
   const requestPause = (): void => {
-    if (powered && world.scene === 'intro') pauseQueued = true;
+    if (powered && LEADS_TO_PLAY.has(world.scene)) pauseQueued = true;
     if (!powered || world.scene !== 'playing') return;
     world.events = [];
     enterPaused(world);
