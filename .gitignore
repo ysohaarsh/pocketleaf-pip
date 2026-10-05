@@ -9,3 +9,4 @@ blob-report
 .claude/settings.local.json
 *.local
 *.tsbuildinfo
+.claude/scheduled_tasks.lock
