@@ -5,6 +5,7 @@ import {
   loadSettings,
   sanitizeSettings,
   saveSettings,
+  settingsToPersist,
 } from '../../src/shell/settingsStore';
 
 class FakeStorage {
@@ -64,5 +65,24 @@ describe('settingsStore', () => {
     s.failSet = true;
     expect(() => saveSettings(s, DEFAULT_SETTINGS)).not.toThrow();
     expect(() => saveSettings(null, DEFAULT_SETTINGS)).not.toThrow();
+  });
+
+  it('keeps the stored LCD value unless the change toggled LCD', () => {
+    const forced = { ...DEFAULT_SETTINGS, lcd: false };
+    const louder = { ...forced, volume: 0.9 };
+    expect(settingsToPersist(forced, louder, true)).toEqual({
+      toStore: { ...louder, lcd: true },
+      storedLcd: true,
+    });
+    const toggledOn = { ...forced, lcd: true };
+    expect(settingsToPersist(forced, toggledOn, false)).toEqual({
+      toStore: toggledOn,
+      storedLcd: true,
+    });
+    const toggledOff = { ...DEFAULT_SETTINGS, lcd: false };
+    expect(settingsToPersist({ ...DEFAULT_SETTINGS, lcd: true }, toggledOff, true)).toEqual({
+      toStore: toggledOff,
+      storedLcd: false,
+    });
   });
 });

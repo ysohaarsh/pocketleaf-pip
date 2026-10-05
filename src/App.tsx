@@ -1,10 +1,15 @@
-import { useEffect, useLayoutEffect, useState, useSyncExternalStore } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { createAudioEngine } from './audio';
 import type { Settings } from './engine/api';
 import { createGameHost } from './engine/runtime';
 import { Console } from './shell/Console';
 import { createHostStore } from './shell/hostStore';
-import { loadSettings, safeLocalStorage, saveSettings } from './shell/settingsStore';
+import {
+  loadSettings,
+  safeLocalStorage,
+  saveSettings,
+  settingsToPersist,
+} from './shell/settingsStore';
 import { parseUrlParams, type UrlParams } from './shell/urlParams';
 
 function prefersReducedMotion(): boolean {
@@ -41,10 +46,12 @@ export function App() {
   const [storage] = useState(safeLocalStorage);
   const [store] = useState(() => createStore(params, storage));
   // Test mode starts with LCD effects off (deterministic pixels) but still honours the toggle.
-  const [settings, setSettings] = useState<Settings>(() => {
-    const loaded = loadSettings(storage);
-    return params.test ? { ...loaded, lcd: false } : loaded;
-  });
+  const [loaded] = useState(() => loadSettings(storage));
+  const [settings, setSettings] = useState<Settings>(() =>
+    params.test ? { ...loaded, lcd: false } : loaded,
+  );
+  // LCD value on disk; the test-mode override is only written if the user toggles LCD.
+  const storedLcd = useRef(loaded.lcd);
   const host = useSyncExternalStore(store.subscribe, store.getSnapshot);
 
   // Layout effect so the host exists before first paint (no empty-frame flash / layout shift).
@@ -77,8 +84,10 @@ export function App() {
   }, [host]);
 
   const changeSettings = (next: Settings): void => {
+    const persisted = settingsToPersist(settings, next, storedLcd.current);
+    storedLcd.current = persisted.storedLcd;
     setSettings(next);
-    saveSettings(storage, next);
+    saveSettings(storage, persisted.toStore);
   };
 
   return (
