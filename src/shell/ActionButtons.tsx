@@ -17,6 +17,7 @@ export function ActionButtons({ input }: { input: InputHub }) {
           <button
             ref={bind(name)}
             type="button"
+            tabIndex={-1}
             className="action__btn"
             aria-label={LABELS[name]}
             data-testid={`btn-${name}`}

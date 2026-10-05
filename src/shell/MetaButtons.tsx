@@ -17,6 +17,7 @@ export function MetaButtons({ input }: { input: InputHub }) {
           key={name}
           ref={bind(name)}
           type="button"
+          tabIndex={-1}
           className="meta__btn"
           aria-label={LABELS[name]}
           data-testid={`btn-${name}`}
