@@ -74,17 +74,12 @@ export function isFromEditable(target: EventTarget | null): boolean {
   return el.closest('input, select, textarea, [data-no-game-keys]') !== null;
 }
 
-/** True for focusable UI controls (not the on-screen game buttons, which carry data-pressed). */
-export function isFocusedControl(target: EventTarget | null): boolean {
-  const el = target as Partial<Pick<HTMLElement, 'closest'>> | null;
-  if (!el || typeof el.closest !== 'function') return false;
-  return el.closest('button:not([data-pressed]), a[href], [role="switch"]') !== null;
-}
-
 /**
  * Map keyboard events on `target` (normally window) to handheld buttons: Arrows/WASD = D-pad,
  * Z/K = A, X/J = B, Enter = START, Shift/Backspace = SELECT. Game keys get preventDefault; key
- * repeat is ignored; keys aimed at form controls or [data-no-game-keys] are left alone.
+ * repeat is ignored; keys aimed at form controls or [data-no-game-keys] are left alone. Enter is
+ * always START (even with a toolbar button focused, e.g. after closing settings); focused toolbar
+ * buttons are activated with Space, which is not a game key.
  * Returns a detach function.
  */
 export function attachKeyboard(hub: InputHub, target: KeyTarget): () => void {
@@ -94,8 +89,6 @@ export function attachKeyboard(hub: InputHub, target: KeyTarget): () => void {
     const e = ev as unknown as KeyEventLike;
     const button = buttonForKey(e);
     if (!button || isFromEditable(e.target)) return;
-    // Enter on a focused toolbar button / switch activates it instead of pressing START.
-    if (button === 'start' && isFocusedControl(e.target)) return;
     e.preventDefault();
     if (e.repeat) return;
     const keys = down.get(button) ?? new Set<string>();

@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { InputHub } from '../../src/input/InputState';
-import {
-  attachKeyboard,
-  buttonForKey,
-  isFocusedControl,
-  isFromEditable,
-} from '../../src/input/keyboard';
+import { attachKeyboard, buttonForKey, isFromEditable } from '../../src/input/keyboard';
 
 interface FakeKey {
   key: string;
@@ -122,23 +117,16 @@ describe('keyboard mapping', () => {
     expect(hub.getHeld().left).toBe(false);
   });
 
-  it('Enter on a focused toolbar button activates it instead of pressing START', () => {
-    // closest() matches only the "focusable control" query, not the editable one.
-    const button = {
-      isContentEditable: false,
-      closest: (sel: string) => (sel.startsWith('button') ? {} : null),
-    };
-    expect(isFocusedControl(button as unknown as EventTarget)).toBe(true);
-    expect(isFocusedControl(null)).toBe(false);
+  it('Enter is START even with a toolbar button focused; Space is left to the button', () => {
+    const button = { isContentEditable: false, closest: () => null };
     const hub = new InputHub();
     const w = fakeWindow();
     attachKeyboard(hub, w.target);
     const enter = w.fire('keydown', { key: 'Enter', code: 'Enter', target: button });
-    expect(enter.prevented).toBeUndefined();
-    expect(hub.getHeld().start).toBe(false);
-    // Other game keys still work while a toolbar button has focus.
-    w.fire('keydown', { key: 'ArrowLeft', code: 'ArrowLeft', target: button });
-    expect(hub.getHeld().left).toBe(true);
+    expect(enter.prevented).toBe(true);
+    expect(hub.getHeld().start).toBe(true);
+    const space = w.fire('keydown', { key: ' ', code: 'Space', target: button });
+    expect(space.prevented).toBeUndefined();
   });
 
   it('blur and detach release everything and remove listeners', () => {
