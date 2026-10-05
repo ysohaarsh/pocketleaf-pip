@@ -2,6 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AudioEngine } from '../../src/audio/types';
 import type { HostOptions } from '../../src/engine/api';
+import { MAX_SCORE } from '../../src/game/constants';
 
 vi.mock('../../src/engine/blit', () => ({
   createBlitter: () => ({
@@ -123,6 +124,13 @@ describe('break-it: host focus and power edge cases', () => {
     host.setPowered(true);
     runFrames(2);
     expect(scene()).toBe('boot');
+    host.destroy();
+  });
+
+  it('a stored high score beyond the 6-digit display is capped', () => {
+    const storage = { getItem: () => '123456789', setItem: () => undefined };
+    const host = createGameHost(opts({ storage }), audio);
+    expect(window.__GAME__!.world().highScore).toBe(MAX_SCORE);
     host.destroy();
   });
 });

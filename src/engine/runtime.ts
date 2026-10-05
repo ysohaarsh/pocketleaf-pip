@@ -1,6 +1,6 @@
 import type { AudioEngine } from '../audio/types';
 import { installTestHooks } from '../debug/testHooks';
-import { BOOT_CHIME_TICK, SCREEN_H, SCREEN_W } from '../game/constants';
+import { BOOT_CHIME_TICK, MAX_SCORE, SCREEN_H, SCREEN_W } from '../game/constants';
 import { LEVELS, TEST_LEVELS } from '../game/levels';
 import { checkHighScore } from '../game/events';
 import { enterPaused } from '../game/scenes/transitions';
@@ -54,7 +54,7 @@ export function planLevels(levelOverride: string | null, test: boolean): LevelPl
 function readHighScore(storage: HostOptions['storage']): number {
   try {
     const n = parseInt(storage?.getItem(HIGH_SCORE_KEY) ?? '0', 10);
-    return Number.isFinite(n) && n > 0 ? n : 0;
+    return Number.isFinite(n) && n > 0 ? Math.min(n, MAX_SCORE) : 0;
   } catch {
     return 0;
   }
