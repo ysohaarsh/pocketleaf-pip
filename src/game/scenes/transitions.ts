@@ -105,12 +105,19 @@ export function enterPlaying(world: World): void {
   emitMusic(world, world.level.def.song);
 }
 
-/** Pause (only from playing). */
+/**
+ * Pause (only from playing). The level song keeps its place: it is neither stopped here nor
+ * restarted on resume, so pausing never rewinds the music to bar 1.
+ */
 export function enterPaused(world: World): void {
   if (world.scene !== 'playing') return;
   setScene(world, 'paused');
   emitSfx(world, 'pause');
-  emitMusic(world, null);
+}
+
+/** Resume from pause without re-emitting the level song. */
+export function resumePlaying(world: World): void {
+  setScene(world, 'playing');
 }
 
 /** Pip dies: death jingle, pop-up animation. */

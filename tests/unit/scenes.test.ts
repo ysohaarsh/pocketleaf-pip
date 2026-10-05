@@ -83,6 +83,7 @@ describe('scene state machine', () => {
     d.run(INTRO_TICKS);
     expect(d.world.scene).toBe('playing');
     expect(music(d.log).at(-1)).toBe('grass');
+    const musicBeforePause = music(d.log).length;
     d.tap('start');
     expect(d.world.scene).toBe('paused');
     expect(d.sfx()).toContain('pause');
@@ -95,6 +96,8 @@ describe('scene state machine', () => {
     expect(d.world.scene).toBe('playing');
     d.tick();
     expect(d.world.tick).toBe(tick + 1);
+    // Pausing and resuming neither stops nor restarts the level song.
+    expect(music(d.log)).toHaveLength(musicBeforePause);
   });
 
   it('A skips the intro card', () => {
