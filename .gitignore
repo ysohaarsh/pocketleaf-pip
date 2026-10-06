@@ -11,3 +11,5 @@ blob-report
 *.tsbuildinfo
 .claude/scheduled_tasks.lock
 scripts/.tmp
+.vercel
+.env*
