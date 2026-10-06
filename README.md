@@ -5,7 +5,7 @@ your browser.** Guide Pip, a small sprout with big ambitions, across three hand-
 caves and sky: stomp Mossbugs, dodge Snappers, time your jumps past Flutters, collect Glimmers and
 reach the Beacon before the clock runs out.
 
-**Live demo:** https://ysohaarsh.github.io/pocketleaf-pip/
+**Live demo:** https://pocketleaf-pip.vercel.app (Vercel) · https://ysohaarsh.github.io/pocketleaf-pip/ (GitHub Pages)
 
 ![POCKETLEAF console on desktop](docs/screenshots/desktop-play.png)
 

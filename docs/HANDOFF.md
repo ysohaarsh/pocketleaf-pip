@@ -10,20 +10,20 @@ Read this first in a new session. Contracts and design decisions live in [PLAN.m
 - **Live (GitHub Pages):** https://ysohaarsh.github.io/pocketleaf-pip/ — `deploy.yml` runs only
   after the `CI` workflow succeeds on `main` (`workflow_run`). The `github-pages` environment had to
   allow branch `main` (it defaulted to `master`).
+- **Live (Vercel):** https://pocketleaf-pip.vercel.app — project `pocketleaf-pip` in team
+  `yadavharsh715-7698s-projects`, Git-connected to the repo, so every push to `main` deploys to
+  production. These deploys are NOT gated on CI (Pages is); to gate, turn off auto-deploy and deploy
+  from CI with a `VERCEL_TOKEN` secret. The Vercel MCP connector lacks project-create permission;
+  the CLI (`npx vercel`, logged in as `yadavharsh715-7698`) works.
 - **Tests:** `npm run check` green — 385 unit tests, 74 e2e (Chromium, WebKit, mobile), 99% line
   coverage of `src/game` + `src/engine`. CI passed twice in a row with zero flaky tests.
 - **Bundle:** 93 KB gzipped JS. Perf smoke: ~16.7 ms avg frame locally, ≤ 25 ms allowed on CI.
 
 ## Next up (not started)
 
-1. **Vercel deploy** (user asked; not yet done — needs the user's go-ahead because it's public).
-   Zero config: framework Vite, build `npm run build`, output `dist`, no env vars (`VITE_BASE`
-   defaults to `/`). Options: import the repo at vercel.com/new, or `npx vercel --prod`. Note Vercel
-   Git deploys are NOT gated on CI (Pages is); to gate, disable auto-deploy and deploy from CI with
-   a `VERCEL_TOKEN` secret. Afterwards add the Vercel URL to README.
-2. Listen to the audio in a real browser and tune mix levels (only tested with a fake AudioContext).
-3. Difficulty tuning — bot routes run straight through; levels may be easy.
-4. Ideas: level editor, Tiled import, more worlds, README GIF.
+1. Listen to the audio in a real browser and tune mix levels (only tested with a fake AudioContext).
+2. Difficulty tuning — bot routes run straight through; levels may be easy.
+3. Ideas: level editor, Tiled import, more worlds, README GIF.
 
 ## Gotchas learned the hard way
 
