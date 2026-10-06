@@ -3,6 +3,9 @@
 Original pixel platformer (custom Canvas 2D engine, TypeScript) inside an original React handheld
 shell called POCKETLEAF. 160x144, 4 shades, Web Audio chip synth. See docs/PLAN.md for contracts.
 
+**Starting a new session? Read docs/HANDOFF.md first** — current status (v1.0.0 live on GitHub
+Pages), next steps (Vercel deploy pending), and CI/baseline gotchas.
+
 ## Commands
 
 - `npm run dev` — Vite dev server (http://localhost:5173; add `?test=1` for test mode)
