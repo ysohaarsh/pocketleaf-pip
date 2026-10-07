@@ -18,6 +18,15 @@ interface ConsoleProps {
   lcdOverlay: boolean;
 }
 
+/** Desktop keyboard legend under the console; mirrors BY_CODE in src/input/keyboard.ts. */
+const HINTS: readonly { keys: readonly string[]; action: string }[] = [
+  { keys: ['←', '↑', '→', '↓'], action: 'Move' },
+  { keys: ['Z'], action: 'Jump (A)' },
+  { keys: ['X'], action: 'Run (B)' },
+  { keys: ['Enter'], action: 'Start / Pause' },
+  { keys: ['Shift'], action: 'Select · Music' },
+];
+
 /** The POCKETLEAF handheld body. Renders only on low-frequency host/input changes. */
 export function Console({ host, settings, onSettingsChange, lcdOverlay }: ConsoleProps) {
   const snapshot = useHostSnapshot(host);
@@ -90,10 +99,18 @@ export function Console({ host, settings, onSettingsChange, lcdOverlay }: Consol
           )}
         </div>
       </main>
-      <p className="hint">
-        <kbd>Arrows</kbd>/<kbd>WASD</kbd> move · <kbd>Z</kbd>/<kbd>K</kbd> A · <kbd>X</kbd>/
-        <kbd>J</kbd> B · <kbd>Enter</kbd> START · <kbd>Shift</kbd> SELECT
-      </p>
+      <ul className="hint" aria-label="Keyboard controls">
+        {HINTS.map(({ keys, action }) => (
+          <li key={action} className="hint__item">
+            <span className="hint__keys">
+              {keys.map((k) => (
+                <kbd key={k}>{k}</kbd>
+              ))}
+            </span>
+            <span className="hint__action">{action}</span>
+          </li>
+        ))}
+      </ul>
     </>
   );
 }
