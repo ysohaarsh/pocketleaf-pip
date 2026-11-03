@@ -2,7 +2,12 @@ import { describe, expect, it, vi } from 'vitest';
 import type { GameHost } from '../../src/engine/api';
 import { createHostStore } from '../../src/shell/hostStore';
 import { lcdOverlayVars } from '../../src/shell/screenScale';
-import { fullscreenSupported, isFullscreen, toggleFullscreen } from '../../src/shell/fullscreen';
+import {
+  fullscreenSupported,
+  isFullscreen,
+  subscribeFullscreen,
+  toggleFullscreen,
+} from '../../src/shell/fullscreen';
 
 describe('lcdOverlayVars', () => {
   it('derives CSS px per game pixel from the canvas width', () => {
@@ -81,5 +86,36 @@ describe('fullscreen helpers', () => {
     expect(isFullscreen(d)).toBe(true);
     toggleFullscreen(d, {});
     expect(exitFullscreen).toHaveBeenCalledOnce();
+  });
+
+  it('exits with the webkit fallback and swallows rejected promises', async () => {
+    const webkitExitFullscreen = vi.fn();
+    toggleFullscreen(doc({ webkitFullscreenElement: {} as Element, webkitExitFullscreen }), {});
+    expect(webkitExitFullscreen).toHaveBeenCalledOnce();
+
+    const rejected = () => Promise.reject(new Error('denied'));
+    const requestFullscreen = vi.fn(rejected);
+    toggleFullscreen(doc({ fullscreenElement: null }), { requestFullscreen });
+    const exitFullscreen = vi.fn(rejected);
+    toggleFullscreen(doc({ fullscreenElement: {} as Element, exitFullscreen }), {});
+    await Promise.resolve();
+    expect(requestFullscreen).toHaveBeenCalledOnce();
+    expect(exitFullscreen).toHaveBeenCalledOnce();
+  });
+
+  it('subscribes to both change events and unsubscribes both', () => {
+    const addEventListener = vi.fn();
+    const removeEventListener = vi.fn();
+    const listener = vi.fn();
+    const off = subscribeFullscreen({ addEventListener, removeEventListener }, listener);
+    expect(addEventListener.mock.calls).toEqual([
+      ['fullscreenchange', listener],
+      ['webkitfullscreenchange', listener],
+    ]);
+    off();
+    expect(removeEventListener.mock.calls).toEqual([
+      ['fullscreenchange', listener],
+      ['webkitfullscreenchange', listener],
+    ]);
   });
 });

@@ -1,0 +1,1 @@
+- 2026-10-20: add unit tests for fullscreen webkit exit/subscribe helpers (PR)
