@@ -50,6 +50,17 @@ describe('blocks & items', () => {
     expect(d.world.score).toBe(SCORE_GLIMMER);
   });
 
+  it('bumping a block collects a Glimmer resting on top of it', () => {
+    const d = play(blockAbove('B', '..o...........................'));
+    d.world.player.form = 'bloom';
+    d.run(2);
+    expect(tileAtW(d.world, 2, 2)).toBe(Tile.Glimmer);
+    jumpAndLand(d);
+    expect(tileAtW(d.world, 2, 2)).toBe(Tile.Empty);
+    expect(d.world.coins).toBe(1);
+    expect(d.world.score).toBeGreaterThanOrEqual(SCORE_GLIMMER);
+  });
+
   it('a bumped block animates for a few ticks', () => {
     const d = play(blockAbove('?'));
     d.run(2);

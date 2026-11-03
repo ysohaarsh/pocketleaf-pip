@@ -1,0 +1,1 @@
+- 2026-10-27: test: cover Glimmer collection when bumping the block beneath it (PR)
